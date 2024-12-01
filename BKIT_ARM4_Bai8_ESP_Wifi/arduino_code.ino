@@ -13,11 +13,9 @@ WiFiClient client;
 Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO_KEY);
 
 //setup publish
-//Adafruit_MQTT_Publish light_pub = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/led");
 Adafruit_MQTT_Publish temp_pub = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/temp");
 
 //setup subcribe
-//Adafruit_MQTT_Subscribe light_sub = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/led", MQTT_QOS_1);
 Adafruit_MQTT_Subscribe temp_sub = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/temp", MQTT_QOS_1);
 
 int led_counter = 0;
@@ -44,9 +42,6 @@ void setup() {
     delay(500);
   }
 
-//   subscribe light feed
-//  light_sub.setCallback(lightcallback);
-  
   //mqtt.subscribe(&light_sub);
   mqtt.subscribe(&temp_sub);
 
@@ -67,14 +62,6 @@ void loop() {
   //receive packet
   mqtt.processPackets(1);
   
-  //read serial
-  // if(Serial.available()){
-  //   int msg = Serial.read();
-  //   if(msg == 'o') Serial.print('O');
-  //   else if(msg == 'a') light_pub.publish(0);
-  //   else if(msg == 'A') light_pub.publish(1);
-  //   else if(msg )
-  // }
  while (Serial.available()) {
     
     char c = Serial.read();
@@ -86,19 +73,16 @@ void loop() {
 
     tempBuffer += c;
 
-    if (c == '#') {  // End of message
+    if (c == '#') {  
       if (tempBuffer.startsWith("!TEMP:")) {
         float temperature = parseTemperature(tempBuffer);
-        if (temperature != -999.0) {  // Valid temperature
-          temp_pub.publish(temperature);  // Publish temperature to Adafruit IO
+        if (temperature != -999.0) {  
+          temp_pub.publish(temperature);  
         }
         
       }
-      tempBuffer = "";  // Clear the buffer for the next message
+      tempBuffer = "";  
     }
-    // else{
-    //   temp_pub.publish(30);
-    // }
   }
  
 
@@ -116,20 +100,13 @@ void loop() {
   delay(10);
 }
 float parseTemperature(String message) {
-  int startIndex = message.indexOf(':') + 1;  // Find ':'
-  int endIndex = message.indexOf('#');       // Find '#'
+  int startIndex = message.indexOf(':') + 1;  
+  int endIndex = message.indexOf('#');       
   
   if (startIndex > 0 && endIndex > startIndex) {
     String tempString = message.substring(startIndex, endIndex);
-    return tempString.toFloat();  // Convert to float
+    return tempString.toFloat();  
   }
 
-  return -999.0;  // Return error value if parsing fails
+  return -999.0;
 }
-// void sendTemperatureToAdafruit(float temperature) {
-//   if (temp_sub.publish(temperature)) {
-//     Serial.println("Temperature sent to Adafruit IO: " + String(temperature));
-//   } else {
-//     Serial.println("Failed to send temperature to Adafruit IO");
-//   }
-// }
